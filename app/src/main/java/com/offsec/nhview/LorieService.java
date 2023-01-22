@@ -96,6 +96,7 @@ public class LorieService extends Service {
         String[] dirs = {
                 datadir + "/files/locale",
                 datadir + "/files/xkb",
+		datadir + "/files/usr"
         };
 
         for (String dir : dirs) {

@@ -24,8 +24,6 @@
  * Author: Rob Bradford <rob@linux.intel.com>
  */
 
-#include "config.h"
-
 #include <stddef.h>
 #include <stdbool.h>
 #include <inttypes.h>
@@ -51,13 +49,17 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         length = 3;
         head = 0xe0;
     }
-    else if (unichar <= 0x10ffff) {
+    else if (unichar <= 0x1fffff) {
         length = 4;
         head = 0xf0;
     }
+    else if (unichar <= 0x3ffffff) {
+        length = 5;
+        head = 0xf8;
+    }
     else {
-        buffer[0] = '\0';
-        return 0;
+        length = 6;
+        head = 0xfc;
     }
 
     for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
@@ -78,7 +80,7 @@ is_valid_utf8(const char *ss, size_t len)
 
     /* This beauty is from:
      *  The Unicode Standard Version 6.2 - Core Specification, Table 3.7
-     *  https://www.unicode.org/versions/Unicode6.2.0/ch03.pdf#G7404
+     *  http://www.unicode.org/versions/Unicode6.2.0/ch03.pdf#G7404
      * We can optimize if needed. */
     while (i < len)
     {

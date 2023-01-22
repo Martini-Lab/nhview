@@ -51,8 +51,6 @@
  *         Ran Benita <ran234@gmail.com>
  */
 
-#include "config.h"
-
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -700,13 +698,14 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
             str = xkb_atom_text(ctx, val);
             len = strlen(str);
-            if (len < 1 || len > sizeof(act->data)) {
+            if (len < 1 || len > 7) {
+                log_warn(ctx,
+                         "A private action has 7 data bytes; "
+                         "Illegal data ignored\n");
                 return false;
             }
 
-            /* act->data may not be null-terminated, this is intentional */
-            memset(act->data, 0, sizeof(act->data));
-            memcpy(act->data, str, len);
+            strncpy((char *) act->data, str, sizeof(act->data));
             return true;
         }
         else {

@@ -21,8 +21,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-
 #include "evdev-scancodes.h"
 #include "test.h"
 

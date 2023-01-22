@@ -21,8 +21,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
 #include "scanner-utils.h"
@@ -50,8 +48,6 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     if (is_hex)
         *out = strtoul(start, &end, 16);
     else if (is_float)
-        /* The parser currently just ignores floats, so the cast is
-         * fine - the value doesn't matter. */
         *out = strtod(start, &end);
     else
         *out = strtoul(start, &end, 10);
@@ -196,7 +192,7 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
 {
     bool ok;
     XkbFile *xkb_file;
-    char *string;
+    const char *string;
     size_t size;
 
     ok = map_file(file, &string, &size);

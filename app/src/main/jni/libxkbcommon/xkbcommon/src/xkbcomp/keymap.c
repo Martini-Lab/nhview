@@ -27,8 +27,6 @@
  *         Ran Benita <ran234@gmail.com>
  */
 
-#include "config.h"
-
 #include "xkbcomp-priv.h"
 
 static void
@@ -234,22 +232,20 @@ bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
     bool ok;
+    const char *main_name;
     XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
     enum xkb_file_type type;
     struct xkb_context *ctx = keymap->ctx;
+
+    main_name = file->name ? file->name : "(unnamed)";
 
     /* Collect section files and check for duplicates. */
     for (file = (XkbFile *) file->defs; file;
          file = (XkbFile *) file->common.next) {
         if (file->file_type < FIRST_KEYMAP_FILE_TYPE ||
             file->file_type > LAST_KEYMAP_FILE_TYPE) {
-            if (file->file_type == FILE_TYPE_GEOMETRY) {
-                log_vrb(ctx, 1,
-                        "Geometry sections are not supported; ignoring\n");
-            } else {
-                log_err(ctx, "Cannot define %s in a keymap file\n",
-                        xkb_file_type_to_string(file->file_type));
-            }
+            log_err(ctx, "Cannot define %s in a keymap file\n",
+                    xkb_file_type_to_string(file->file_type));
             continue;
         }
 
@@ -259,6 +255,11 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
                     "All sections after the first ignored\n",
                     xkb_file_type_to_string(file->file_type));
             continue;
+        }
+
+        if (!file->topName) {
+            free(file->topName);
+            file->topName = strdup(main_name);
         }
 
         files[file->file_type] = file;
@@ -286,7 +287,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
          type <= LAST_KEYMAP_FILE_TYPE;
          type++) {
         log_dbg(ctx, "Compiling %s \"%s\"\n",
-                xkb_file_type_to_string(type), files[type]->name);
+                xkb_file_type_to_string(type), files[type]->topName);
 
         ok = compile_file_fns[type](files[type], keymap, merge);
         if (!ok) {

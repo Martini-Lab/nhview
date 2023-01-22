@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.offsec.nhview"
-    android:sharedUserId="com.offsec.nhterm"
-    android:installLocation="internalOnly"
-    >
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.offsec.nhview"
+          android:sharedUserId="com.offsec.nhterm">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
@@ -18,35 +16,33 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning"
-        >
+        tools:ignore="GoogleAppIndexingWarning" >
         <service
             android:name=".LorieService"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="true"/>
+        <service
+            android:name=".LorieTestService"
+            android:enabled="true"
+            android:exported="true"
+            android:process="com.offsec.nhview.separated"/>
         <activity android:name=".MainActivity"
-            android:launchMode="singleInstance"
-            android:supportsPictureInPicture="true"
-            android:configChanges="fontScale|orientation|screenSize|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|screenLayout|touchscreen|uiMode|smallestScreenSize|density"
-            android:resizeableActivity="true">
+                  android:theme="@style/NoActionBar"
+                  android:launchMode="singleInstance"
+                  android:configChanges="fontScale|orientation|screenSize|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|screenLayout|touchscreen|uiMode|smallestScreenSize|density"
+                  android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-	     <intent-filter>
-        	<category android:name="android.intent.category.SECONDARY_HOME" />
-    	    </intent-filter>
         </activity>
         <activity
             android:theme="@style/Theme.AppCompat.DayNight"
             android:excludeFromRecents="true"
-            android:name=".LoriePreferences" 
-            android:supportsPictureInPicture="false"
-            android:resizeableActivity="true">
+            android:name=".LoriePreferences" >
         </activity>
+	<meta-data android:name="com.samsung.android.multidisplay.keep_process_alive" android:value="true"/>
     </application>
-    <queries>
-        <package android:name="com.offsec.nhterm" />
-    </queries>
+
 </manifest>

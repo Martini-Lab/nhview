@@ -24,8 +24,6 @@
  *
  ********************************************************/
 
-#include "config.h"
-
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -44,20 +42,16 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
         *elem_rtrn = NULL;
         *field_rtrn = xkb_atom_text(ctx, expr->ident.ident);
         *index_rtrn = NULL;
-        return (*field_rtrn != NULL);
+        return true;
     case EXPR_FIELD_REF:
         *elem_rtrn = xkb_atom_text(ctx, expr->field_ref.element);
         *field_rtrn = xkb_atom_text(ctx, expr->field_ref.field);
         *index_rtrn = NULL;
-        return (*elem_rtrn != NULL && *field_rtrn != NULL);
+        return true;
     case EXPR_ARRAY_REF:
         *elem_rtrn = xkb_atom_text(ctx, expr->array_ref.element);
         *field_rtrn = xkb_atom_text(ctx, expr->array_ref.field);
         *index_rtrn = expr->array_ref.entry;
-        if (expr->array_ref.element != XKB_ATOM_NONE && *elem_rtrn == NULL)
-            return false;
-        if (*field_rtrn == NULL)
-            return false;
         return true;
     default:
         break;
@@ -107,8 +101,6 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         return false;
 
     str = xkb_atom_text(ctx, field);
-    if (!str)
-        return false;
 
     if (istreq(str, "all")) {
         *val_rtrn  = MOD_REAL_MASK_ALL;
@@ -173,7 +165,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
 
     case EXPR_INVERT:
     case EXPR_NOT:
-        ok = ExprResolveBoolean(ctx, expr->unary.child, set_rtrn);
+        ok = ExprResolveBoolean(ctx, expr, set_rtrn);
         if (ok)
             *set_rtrn = !*set_rtrn;
         return ok;
@@ -184,9 +176,6 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_ASSIGN:
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
-    case EXPR_ACTION_DECL:
-    case EXPR_ACTION_LIST:
-    case EXPR_KEYSYM_LIST:
         log_err(ctx, "%s of boolean values not permitted\n",
                 expr_op_type_to_string(expr->expr.op));
         break;
@@ -479,9 +468,6 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_INVERT:
     case EXPR_NOT:
     case EXPR_UNARY_PLUS:
-    case EXPR_ACTION_DECL:
-    case EXPR_ACTION_LIST:
-    case EXPR_KEYSYM_LIST:
         log_err(ctx, "%s of strings not permitted\n",
                 expr_op_type_to_string(expr->expr.op));
         return false;
@@ -524,8 +510,8 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
                       unsigned int *val_rtrn, IdentLookupFunc lookup,
                       const void *lookupPriv)
 {
-    bool ok = false;
-    unsigned int l = 0, r = 0;
+    bool ok = 0;
+    unsigned int l, r;
     int v;
     ExprDef *left, *right;
     const char *bogus = NULL;
@@ -557,7 +543,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case EXPR_ARRAY_REF:
         bogus = "array reference";
-        /* fallthrough */
+
     case EXPR_ACTION_DECL:
         if (bogus == NULL)
             bogus = "function use";

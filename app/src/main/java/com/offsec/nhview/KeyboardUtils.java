@@ -7,8 +7,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+
 import java.util.HashMap;
 
 /**
@@ -101,12 +100,11 @@ public class KeyboardUtils implements ViewTreeObserver.OnGlobalLayoutListener
      * Force closes the soft keyboard
      * @param activeView the view with the keyboard focus
      */
-    public void forceCloseKeyboard(View activeView)
+    public static void forceCloseKeyboard(View activeView)
     {
         InputMethodManager inputMethodManager = (InputMethodManager) activeView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if(inputMethodManager != null) {
+        if(inputMethodManager != null)
             inputMethodManager.hideSoftInputFromWindow(activeView.getWindowToken(), 0);
-	}
     }
 
     private void removeListener()

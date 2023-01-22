@@ -112,7 +112,8 @@ public class LoriePreferences extends AppCompatActivity implements SharedPrefere
                     } else e.printStackTrace();
                     return false;
                 }
-            }return true;
+            }
+            return true;
         }
     }
 }

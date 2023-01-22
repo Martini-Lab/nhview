@@ -21,8 +21,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-
 #include "test.h"
 #include "xkbcommon/xkbcommon-x11.h"
 
@@ -36,7 +34,6 @@ main(void)
     struct xkb_keymap *keymap;
     struct xkb_state *state;
     char *dump;
-    int exit_code = 0;
 
     /*
     * The next two steps depend on a running X server with XKB support.
@@ -44,20 +41,16 @@ main(void)
     * So we don't want a FAIL here.
     */
     conn = xcb_connect(NULL, NULL);
-    if (!conn || xcb_connection_has_error(conn)) {
-        exit_code = SKIP_TEST;
-        goto err_conn;
-    }
+    if (!conn || xcb_connection_has_error(conn))
+        return SKIP_TEST;
 
     ret = xkb_x11_setup_xkb_extension(conn,
                                       XKB_X11_MIN_MAJOR_XKB_VERSION,
                                       XKB_X11_MIN_MINOR_XKB_VERSION,
                                       XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS,
                                       NULL, NULL, NULL, NULL);
-    if (!ret) {
-        exit_code = SKIP_TEST;
-        goto err_conn;
-    }
+    if (!ret)
+        return SKIP_TEST;
 
     device_id = xkb_x11_get_core_keyboard_device_id(conn);
     assert(device_id != -1);
@@ -78,9 +71,8 @@ main(void)
     free(dump);
     xkb_state_unref(state);
     xkb_keymap_unref(keymap);
-err_conn:
     xcb_disconnect(conn);
     xkb_context_unref(ctx);
 
-    return exit_code;
+    return 0;
 }

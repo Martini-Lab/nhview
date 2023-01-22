@@ -1,6 +1,6 @@
 // symbols definition for a Macintosh "Extended" keyboard
 
-default xkb_symbols "extended" {
+xkb_symbols "extended" {
 
     name[Group1]= "USA";
     key <ESC>  {	[ Escape			]	};
@@ -59,7 +59,7 @@ default xkb_symbols "extended" {
     key <SPCE> {	[  space			]	};
 
     include "eurosign(e)"
-    include "keypad(overlay)"
+    include "keypad"
 
     key <KPEQ> {	[  equal			]	};
 };

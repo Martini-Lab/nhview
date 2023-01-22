@@ -47,8 +47,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -266,8 +264,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     *pred_rtrn = MATCH_EXACTLY;
     if (expr->expr.op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->ctx, expr->action.name);
-        if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn) ||
-            !expr->action.args || expr->action.args->common.next) {
+        if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn)) {
             log_err(info->ctx,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
@@ -380,6 +377,8 @@ static void
 MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
                         enum merge_mode merge)
 {
+    SymInterpInfo *si;
+
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
         return;
@@ -397,7 +396,6 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         darray_init(from->interps);
     }
     else {
-        SymInterpInfo *si;
         darray_foreach(si, from->interps) {
             si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
             if (!AddInterp(into, si, false))
@@ -690,7 +688,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
     }
 
     si = info->default_interp;
-    si.merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
+    si.merge = merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
     si.interp.sym = def->sym;
     si.interp.match = pred;
     si.interp.mods = mods;
@@ -794,7 +792,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 
         if (info->errorCount > 10) {
             log_err(info->ctx,
-                    "Abandoning compatibility map \"%s\"\n", file->name);
+                    "Abandoning compatibility map \"%s\"\n", file->topName);
             break;
         }
     }

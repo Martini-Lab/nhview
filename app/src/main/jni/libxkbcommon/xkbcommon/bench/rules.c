@@ -21,14 +21,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-
 #include <time.h>
 
 #include "../test/test.h"
-#include "xkbcomp/xkbcomp-priv.h"
-#include "xkbcomp/rules.h"
-#include "bench.h"
+#include "xkbcomp-priv.h"
+#include "rules.h"
 
 #define BENCHMARK_ITERATIONS 20000
 
@@ -36,12 +33,12 @@ int
 main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
+    struct timespec start, stop, elapsed;
     int i;
     struct xkb_rule_names rmlvo = {
         "evdev", "pc105", "us,il", ",", "ctrl:nocaps,grp:menu_toggle",
     };
-    struct bench bench;
-    char *elapsed;
+    struct xkb_component_names kccgst;
 
     ctx = test_get_context(0);
     assert(ctx);
@@ -49,22 +46,25 @@ main(int argc, char *argv[])
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    bench_start(&bench);
+    clock_gettime(CLOCK_MONOTONIC, &start);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        struct xkb_component_names kccgst;
-
         assert(xkb_components_from_rules(ctx, &rmlvo, &kccgst));
         free(kccgst.keycodes);
         free(kccgst.types);
         free(kccgst.compat);
         free(kccgst.symbols);
     }
-    bench_stop(&bench);
+    clock_gettime(CLOCK_MONOTONIC, &stop);
 
-    elapsed = bench_elapsed_str(&bench);
-    fprintf(stderr, "processed %d rule files in %ss\n",
-            BENCHMARK_ITERATIONS, elapsed);
-    free(elapsed);
+    elapsed.tv_sec = stop.tv_sec - start.tv_sec;
+    elapsed.tv_nsec = stop.tv_nsec - start.tv_nsec;
+    if (elapsed.tv_nsec < 0) {
+        elapsed.tv_nsec += 1000000000;
+        elapsed.tv_sec--;
+    }
+
+    fprintf(stderr, "processed %d rule files in %ld.%09lds\n",
+            BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
 
     xkb_context_unref(ctx);
     return 0;

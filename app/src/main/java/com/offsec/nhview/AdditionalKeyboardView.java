@@ -14,9 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.HorizontalScrollView;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.view.SurfaceView;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,14 +62,24 @@ public class AdditionalKeyboardView extends HorizontalScrollView implements View
             if (getVisibility() != View.GONE)
                 setVisibility(View.GONE);
             return;
-        } else {
+        }
 
-            int visibility = View.VISIBLE;
-            softKbdVisible = (visibility == View.VISIBLE);
+        Rect r = new Rect();
+        getWindowVisibleDisplayFrame(r);
 
-            if (!softKbdVisible)
-           	 setVisibility(visibility);
-	}
+        float mScreenDensity = getResources().getDisplayMetrics().density;
+        int MAGIC_NUMBER = 200;
+
+        int heightDiff = getRootView().getHeight() - (r.bottom - r.top);
+        float dp = heightDiff/ mScreenDensity;
+        int visibility = (dp > MAGIC_NUMBER)?View.VISIBLE:View.INVISIBLE;
+        softKbdVisible = (visibility == View.VISIBLE);
+
+        if (getVisibility() == visibility) return;
+
+        if (softKbdVisible)
+            setY(r.bottom - r.top - getHeight());
+        setVisibility(visibility);
     }
 
     public void reload(int[] keys, View TargetView, View.OnKeyListener TargetListener) {

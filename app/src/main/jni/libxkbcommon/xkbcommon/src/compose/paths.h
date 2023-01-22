@@ -30,11 +30,8 @@ resolve_locale(const char *locale);
 const char *
 get_xlocaledir_path(void);
 
-char *
+const char *
 get_xcomposefile_path(void);
-
-char *
-get_xdg_xcompose_file_path(void);
 
 char *
 get_home_xcompose_file_path(void);

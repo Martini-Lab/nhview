@@ -24,8 +24,6 @@
  *
  ********************************************************/
 
-#include "config.h"
-
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -384,8 +382,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
         return false;
     }
 
-    return AddKeyName(info, (xkb_keycode_t) stmt->value,
-                      stmt->name, merge, false, true);
+    return AddKeyName(info, stmt->value, stmt->name, merge, false, true);
 }
 
 static bool
@@ -470,7 +467,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
 
     if (!ExprResolveString(info->ctx, def->name, &name)) {
         char buf[20];
-        snprintf(buf, sizeof(buf), "%u", def->ndx);
+        snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
         return ReportBadType(info->ctx, "indicator", "name", buf, "string");
     }
@@ -518,7 +515,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 
         if (info->errorCount > 10) {
             log_err(info->ctx, "Abandoning keycodes file \"%s\"\n",
-                    file->name);
+                    file->topName);
             break;
         }
     }
@@ -599,14 +596,14 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         key_aliases = calloc(num_key_aliases, sizeof(*key_aliases));
         if (!key_aliases)
             return false;
+    }
 
-        i = 0;
-        darray_foreach(alias, info->aliases) {
-            if (alias->real != XKB_ATOM_NONE) {
-                key_aliases[i].alias = alias->alias;
-                key_aliases[i].real = alias->real;
-                i++;
-            }
+    i = 0;
+    darray_foreach(alias, info->aliases) {
+        if (alias->real != XKB_ATOM_NONE) {
+            key_aliases[i].alias = alias->alias;
+            key_aliases[i].real = alias->real;
+            i++;
         }
     }
 

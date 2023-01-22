@@ -1,4 +1,1 @@
-include ':starter:stub'
-include ':starter'
-include ':common'
 include ':app'

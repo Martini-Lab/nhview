@@ -95,10 +95,8 @@ enum expr_value_type {
     EXPR_TYPE_UNKNOWN = 0,
     EXPR_TYPE_BOOLEAN,
     EXPR_TYPE_INT,
-    EXPR_TYPE_FLOAT,
     EXPR_TYPE_STRING,
     EXPR_TYPE_ACTION,
-    EXPR_TYPE_ACTIONS,
     EXPR_TYPE_KEYNAME,
     EXPR_TYPE_SYMBOLS,
 
@@ -190,12 +188,6 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    /* We don't support floats, but we still represnt them in the AST, in
-     * order to provide proper error messages. */
-} ExprFloat;
-
-typedef struct {
-    ExprCommon expr;
     xkb_atom_t key_name;
 } ExprKeyName;
 
@@ -231,11 +223,6 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    ExprDef *actions;
-} ExprActionList;
-
-typedef struct {
-    ExprCommon expr;
     darray(xkb_keysym_t) syms;
     darray(unsigned int) symsMapIndex;
     darray(unsigned int) symsNumEntries;
@@ -243,6 +230,7 @@ typedef struct {
 
 union ExprDef {
     ParseCommon common;
+    /* Maybe someday we can use C11 anonymous struct for ExprCommon here. */
     ExprCommon expr;
     ExprIdent ident;
     ExprString string;
@@ -254,7 +242,6 @@ union ExprDef {
     ExprFieldRef field_ref;
     ExprArrayRef array_ref;
     ExprAction action;
-    ExprActionList actions;
     ExprKeysymList keysym_list;
 };
 
@@ -351,6 +338,7 @@ enum xkb_map_flags {
 typedef struct {
     ParseCommon common;
     enum xkb_file_type file_type;
+    char *topName;
     char *name;
     ParseCommon *defs;
     enum xkb_map_flags flags;

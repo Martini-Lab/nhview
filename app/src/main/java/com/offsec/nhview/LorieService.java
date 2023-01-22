@@ -2,7 +2,6 @@ package com.offsec.nhview;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,22 +10,15 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -39,20 +31,10 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-
-@SuppressWarnings({"ConstantConditions", "SameParameterValue", "SdCardPath"})
+@SuppressWarnings({"ConstantConditions", "SameParameterValue"})
 @SuppressLint({"ClickableViewAccessibility", "StaticFieldLeak"})
 public class LorieService extends Service {
-    static final String LAUNCHED_BY_COMPATION = "com.offsec.nhview.launched_by_companion";
+
     static final String ACTION_STOP_SERVICE = "com.offsec.nhview.service_stop";
     static final String ACTION_START_FROM_ACTIVITY = "com.offsec.nhview.start_from_activity";
     static final String ACTION_START_PREFERENCES_ACTIVITY = "com.offsec.nhview.start_preferences_activity";
@@ -62,7 +44,7 @@ public class LorieService extends Service {
     //private
     //static
     long compositor;
-    private static final ServiceEventListener listener = new ServiceEventListener();
+    private static ServiceEventListener listener = new ServiceEventListener();
     private static MainActivity act;
 
     private TouchParser mTP;
@@ -86,35 +68,12 @@ public class LorieService extends Service {
         }
     }
 
-    @SuppressLint({"BatteryLife", "ObsoleteSdkInt"})
+    @SuppressLint("BatteryLife")
     @Override
     public void onCreate() {
-
         if (isServiceRunningInForeground(this, LorieService.class)) return;
 
-        String datadir = getApplicationInfo().dataDir;
-        String[] dirs = {
-                datadir + "/files/locale",
-                datadir + "/files/xkb",
-		datadir + "/files/usr"
-        };
-
-        for (String dir : dirs) {
-            if (!(new File(dir)).exists()) {
-                Log.e("LorieService", dir + " does not exist. Unpacking");
-                try {
-                    InputStream zipStream = getAssets().open("X11.zip");
-                    File targetDirectory = new File(datadir + "/files/");
-                    unzip(zipStream, targetDirectory);
-                    break;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
         compositor = createLorieThread();
-
         if (compositor == 0) {
             Log.e("LorieService", "compositor thread was not created");
             return;
@@ -145,7 +104,7 @@ public class LorieService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         String channelId = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? getNotificationChannel(notificationManager) : "";
         Notification notification = new NotificationCompat.Builder(this, channelId)
-                .setContentTitle("NHView: Wayland")
+                .setContentTitle("Termux:X11")
                 .setSmallIcon(R.drawable.ic_x11_icon)
                 .setContentText("Pull down to show options")
                 .setContentIntent(pendingIntent)
@@ -222,7 +181,7 @@ public class LorieService extends Service {
 
         onPreferencesChanged();
 
-        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
 
@@ -282,7 +241,7 @@ public class LorieService extends Service {
             view.setOnHoverListener(this);
             view.setOnGenericMotionListener(this);
             view.setOnKeyListener(this);
-            surfaceChanged(view.getHolder(), PixelFormat.UNKNOWN, view.getWidth(), view.getHeight());
+            surfaceChanged(view.getHolder(), 0, view.getWidth(), view.getHeight());
         }
 
         public void onPointerButton(int button, int state) {
@@ -409,93 +368,27 @@ public class LorieService extends Service {
         }
     }
 
-    static final Handler handler = new Handler();
-    private abstract static class Task implements Runnable {
-        public Task() {
-            handler.post(this);
-        }
-        @Override
-        public void run() {
-            LorieService svc = getInstance();
-            if (svc == null || svc.compositor == 0 || act == null) {
-                handler.postDelayed(this, 100);
-                return;
-            }
-
-            run(svc);
-        }
-        public abstract void run(LorieService svc);
-    }
-
-    public static void adoptWaylandFd(int fd) {
-        new Task() {
-            @Override
-            public void run(LorieService svc) {
-                svc.passWaylandFD(fd);
-            }
-        };
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void unzip(InputStream zipStream, File targetDirectory) throws IOException {
-        try (ZipInputStream zis = new ZipInputStream(zipStream)) {
-            ZipEntry ze;
-            int count;
-            byte[] buffer = new byte[8192];
-            while ((ze = zis.getNextEntry()) != null) {
-                File file = new File(targetDirectory, ze.getName());
-                File dir = ze.isDirectory() ? file : file.getParentFile();
-                if (!dir.isDirectory() && !dir.mkdirs())
-                    throw new FileNotFoundException("Failed to ensure directory: " +
-                            dir.getAbsolutePath());
-                if (ze.isDirectory())
-                    continue;
-                try (FileOutputStream fout = new FileOutputStream(file)) {
-                    while ((count = zis.read(buffer)) != -1)
-                        fout.write(buffer, 0, count);
-                }
-                long time = ze.getTime();
-                if (time > 0)
-                    file.setLastModified(time);
-            }
-        }
-    }
-
     private void windowChanged(Surface s, int w, int h, int pw, int ph) {windowChanged(compositor, s, w, h, pw, ph);}
-    private native void windowChanged(long compositor, Surface surface, int width, int height, int mmWidth, int mmHeight);
-    
     private void touchDown(int id, float x, float y) { touchDown(compositor, id, (int) x, (int) y); }
-    private native void touchDown(long compositor, int id, int x, int y);
-    
     private void touchMotion(int id, float x, float y) { touchMotion(compositor, id, (int) x, (int) y); }
-    private native void touchMotion(long compositor, int id, int x, int y);
-    
     private void touchUp(int id) { touchUp(compositor, id); }
-    private native void touchUp(long compositor, int id);
-    
     private void touchFrame() { touchFrame(compositor); }
-    private native void touchFrame(long compositor);
-    
     private void pointerMotion(float x, float y) { pointerMotion(compositor, (int) x, (int) y); }
-    private native void pointerMotion(long compositor, int x, int y);
-    
     private void pointerScroll(int axis, float value) { pointerScroll(compositor, axis, value); }
-    private native void pointerScroll(long compositor, int axis, float value);
-    
     private void pointerButton(int button, int type) { pointerButton(compositor, button, type); }
-    private native void pointerButton(long compositor, int button, int type);
-    
     private void keyboardKey(int key, int type, int shift, String characters) {keyboardKey(compositor, key, type, shift, characters);}
-    private native void keyboardKey(long compositor, int key, int type, int shift, String characters);
-
-    private void passWaylandFD(int fd) {passWaylandFD(compositor, fd);}
-    private native void passWaylandFD(long compositor, int fd);
 
     private native long createLorieThread();
-    
+    private native void windowChanged(long compositor, Surface surface, int width, int height, int mmWidth, int mmHeight);
+    private native void touchDown(long compositor, int id, int x, int y);
+    private native void touchMotion(long compositor, int id, int x, int y);
+    private native void touchUp(long compositor, int id);
+    private native void touchFrame(long compositor);
+    private native void pointerMotion(long compositor, int x, int y);
+    private native void pointerScroll(long compositor, int axis, float value);
+    private native void pointerButton(long compositor, int button, int type);
+    private native void keyboardKey(long compositor, int key, int type, int shift, String characters);
     private native void terminate(long compositor);
-
-    public static native void startLogcatForFd(int fd);
 
     static {
         System.loadLibrary("lorie");

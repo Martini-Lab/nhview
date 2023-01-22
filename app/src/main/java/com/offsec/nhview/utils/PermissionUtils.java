@@ -1,4 +1,4 @@
-package com.termux.x11.utils;
+package com.offsec.nhview.utils;
 
 import android.app.AppOpsManager;
 import android.content.Context;

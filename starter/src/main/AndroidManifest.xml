@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.termux.x11.starter">
+    package="com.offsec.nhview.starter">
 
     <application
         android:label="TermuxX11Starter"

@@ -1,4 +1,4 @@
-package com.termux.x11.starter;
+package com.offsec.nhview.starter;
 
 /**
  * \@hide-hidden constants

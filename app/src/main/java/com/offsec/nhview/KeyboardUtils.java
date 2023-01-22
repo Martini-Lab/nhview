@@ -1,4 +1,4 @@
-package com.termux.x11;
+package com.offsec.nhview;
 
 import android.app.Activity;
 import android.graphics.Rect;

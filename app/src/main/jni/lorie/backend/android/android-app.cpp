@@ -179,7 +179,7 @@ void LorieBackendAndroid::passfd(int fd) {
 #define JNI_DECLARE_INNER(package, classname, methodname ) \
      Java_ ## package ## _ ## classname  ## _ ## methodname
 #define JNI_DECLARE(classname, methodname) \
-     JNI_DECLARE_INNER(com_termux_x11, classname, methodname)
+     JNI_DECLARE_INNER(com_offsec_nhview, classname, methodname)
 
 #define WL_POINTER_MOTION 2
 
@@ -427,7 +427,7 @@ void fork(std::function<void()> f) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_termux_x11_LorieService_startLogcatForFd(unused JNIEnv *env, unused jclass clazz, jint fd) {
+Java_com_offsec_nhview_LorieService_startLogcatForFd(unused JNIEnv *env, unused jclass clazz, jint fd) {
 	killAllLogcats();
 
 	LOGI("Starting logcat with output to given fd");

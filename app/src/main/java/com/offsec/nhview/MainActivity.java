@@ -1,4 +1,4 @@
-package com.termux.x11;
+package com.offsec.nhview;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,7 +19,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.termux.x11.utils.PermissionUtils;
+import com.offsec.nhview.utils.PermissionUtils;
 
 public class MainActivity extends AppCompatActivity {
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";

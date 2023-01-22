@@ -1,4 +1,4 @@
-package com.termux.x11;
+package com.offsec.nhview;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.hardware.display.DisplayManagerCompat;
 
-import com.termux.x11.common.ITermuxX11Internal;
+import com.offsec.nhview.common.INHViewInternal;
 
 public class TermuxX11StarterReceiver extends Activity {
     @Override
@@ -96,10 +96,10 @@ public class TermuxX11StarterReceiver extends Activity {
     }
 
     private void handleIntent(Intent intent) {
-        final String extraName = "com.termux.x11.starter";
+        final String extraName = "com.offsec.nhview.starter";
         Bundle bundle;
         IBinder token;
-        ITermuxX11Internal svc;
+        INHViewInternal svc;
         ParcelFileDescriptor pfd = null;
         String toastText;
 
@@ -123,7 +123,7 @@ public class TermuxX11StarterReceiver extends Activity {
             return;
         }
 
-        svc = ITermuxX11Internal.Stub.asInterface(token);
+        svc = INHViewInternal.Stub.asInterface(token);
         if (svc == null) {
             log("Could not create " + extraName + " service proxy");
             return;

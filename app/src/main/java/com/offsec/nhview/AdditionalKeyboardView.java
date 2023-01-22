@@ -1,4 +1,4 @@
-package com.termux.x11;
+package com.offsec.nhview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

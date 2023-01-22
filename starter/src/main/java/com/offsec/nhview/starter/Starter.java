@@ -1,4 +1,4 @@
-package com.termux.x11.starter;
+package com.offsec.nhview.starter;
 
 import android.annotation.SuppressLint;
 import android.app.AppOpsManager;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Objects;
 
-import com.termux.x11.common.ITermuxX11Internal;
+import com.offsec.nhview.common.ITermuxX11Internal;
 
 @SuppressLint("UnsafeDynamicallyLoadedCode")
 @SuppressWarnings({"unused", "RedundantThrows", "SameParameterValue", "FieldCanBeLocal"})
@@ -25,7 +25,7 @@ public class Starter {
     @SuppressLint("SdCardPath")
     private final String XwaylandPath = "/data/data/com.termux/files/usr/bin/Xwayland";
     private final ComponentName TermuxX11Component =
-            ComponentName.unflattenFromString("com.termux.x11/.TermuxX11StarterReceiver");
+            ComponentName.unflattenFromString("com.offsec.nhview/.TermuxX11StarterReceiver");
     private String[] args;
     private Service svc;
     private ParcelFileDescriptor logFD;
@@ -135,7 +135,7 @@ public class Starter {
         bundle.putBinder("", token);
 
         Intent intent = new Intent();
-        intent.putExtra("com.termux.x11.starter", bundle);
+        intent.putExtra("com.offsec.nhview.starter", bundle);
         intent.setComponent(TermuxX11Component);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|

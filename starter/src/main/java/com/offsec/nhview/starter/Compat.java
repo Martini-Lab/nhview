@@ -1,4 +1,4 @@
-package com.termux.x11.starter;
+package com.offsec.nhview.starter;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManagerNative;

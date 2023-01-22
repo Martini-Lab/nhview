@@ -21,6 +21,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.offsec.nhview.utils.PermissionUtils;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 public class MainActivity extends AppCompatActivity {
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
 
@@ -45,7 +48,11 @@ public class MainActivity extends AppCompatActivity {
             setFullScreenForExternalDisplay();
         }
 
-	Runtime.getRuntime().exec("mkdir -p "+" "+"/data/data/com.offsec.nhview/files/usr/tmp").waitFor()
+	try {
+	Runtime.getRuntime().exec(new String[]{"mkdir -p "+" "+"/data/data/com.offsec.nhview/files/usr/tmp"});
+	} catch (Exception e) {
+            // Hopeless
+	}
 
         LorieService.setMainActivity(this);
         LorieService.start(LorieService.ACTION_START_FROM_ACTIVITY);

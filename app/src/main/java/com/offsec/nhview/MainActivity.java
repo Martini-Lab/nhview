@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
             setFullScreenForExternalDisplay();
         }
 
+	Runtime.getRuntime().exec("mkdir -p "+" "+"/data/data/com.offsec.nhview/files/usr/tmp").waitFor()
+
         LorieService.setMainActivity(this);
         LorieService.start(LorieService.ACTION_START_FROM_ACTIVITY);
 

@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v3
     - name: Build
       run: |
-        ./gradlew assembleDebug
+        ./gradlew app:assembleDebug
     - name: Store generated APK file
       uses: actions/upload-artifact@v3
       with:

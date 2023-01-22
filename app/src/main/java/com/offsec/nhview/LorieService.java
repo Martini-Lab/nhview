@@ -73,7 +73,11 @@ public class LorieService extends Service {
     public void onCreate() {
         if (isServiceRunningInForeground(this, LorieService.class)) return;
 
-        compositor = createLorieThread();
+	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        String Xdgpath = preferences.getString("CustXDG", "/data/data/com.termux/files/usr/tmp/");
+        compositor = createLorieThread(Xdgpath);
+
         if (compositor == 0) {
             Log.e("LorieService", "compositor thread was not created");
             return;
@@ -378,7 +382,7 @@ public class LorieService extends Service {
     private void pointerButton(int button, int type) { pointerButton(compositor, button, type); }
     private void keyboardKey(int key, int type, int shift, String characters) {keyboardKey(compositor, key, type, shift, characters);}
 
-    private native long createLorieThread();
+    private native long createLorieThread(String CustXdgpath);
     private native void windowChanged(long compositor, Surface surface, int width, int height, int mmWidth, int mmHeight);
     private native void touchDown(long compositor, int id, int x, int y);
     private native void touchMotion(long compositor, int id, int x, int y);

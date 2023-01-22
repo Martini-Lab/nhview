@@ -10,7 +10,7 @@ endef
 
 prebuilt = $(eval $(call ev-prebuilt, $1))
 
-# libs are prebuilt with termux
+# libs are prebuilt with nhterm/termux
 $(info $(call ev-prebuilt, android-support))
 $(info $(call ev-prebuilt, ffi))
 $(info $(call ev-prebuilt, expat))

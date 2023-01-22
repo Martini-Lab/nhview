@@ -62,11 +62,6 @@ public class MainActivity extends AppCompatActivity {
             getWindow().
              getDecorView().
               setPointerIcon(PointerIcon.getSystemIcon(this, PointerIcon.TYPE_NULL));
-
-        Intent i = getIntent();
-        if (i != null && i.getBooleanExtra(LorieService.LAUNCHED_BY_COMPATION, false)) {
-            LorieService.sendRunCommand(this);
-        }
     }
 
     @Override

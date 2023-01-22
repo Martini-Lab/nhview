@@ -224,49 +224,6 @@ public class LorieService extends Service {
         return START_REDELIVER_INTENT;
     }
 
-    private static void sendRunCommandInternal(Context ctx) {
-        Intent intent = new Intent();
-        intent.setClassName("com.termux", "com.termux.app.RunCommandService");
-        intent.setAction("com.termux.RUN_COMMAND");
-        intent.putExtra("com.termux.RUN_COMMAND_PATH",
-                "/data/data/com.termux/files/usr/libexec/termux-x11/termux-startx11");
-        intent.putExtra("com.termux.RUN_COMMAND_BACKGROUND", true);
-        Log.d("LorieService", "sendRunCommand: " + intent);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ctx.startForegroundService(intent);
-        } else {
-            ctx.startService(intent);
-        }
-    }
-
-    public static void sendRunCommand(AppCompatActivity act) {
-        final String ERROR_MESSAGE =
-                "It is impossible to start without " +
-                "com.termux.permission.RUN_COMMAND permission. " +
-                "Sorry.";
-        if (act.checkSelfPermission("com.termux.permission.RUN_COMMAND") == PackageManager.PERMISSION_GRANTED) {
-            LorieService.sendRunCommandInternal(act);
-        } else {
-            Log.d("MainActivity", "We have no permission to sendRunCommand(). Requesting it.");
-            ActivityResultLauncher<String> requestPermissionLauncher =
-                    act.registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                        if (isGranted) {
-                            sendRunCommandInternal(act);
-                        } else {
-                            new AlertDialog.Builder(act)
-                                .setTitle("Insufficient permission")
-                                .setMessage(ERROR_MESSAGE)
-                                .setPositiveButton(android.R.string.yes,
-                                        (dialog, which) -> act.finish())
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .show();
-
-                        }
-                    });
-            requestPermissionLauncher.launch("com.termux.permission.RUN_COMMAND");
-        }
-    }
-
 
     @Override
     public void onDestroy() {

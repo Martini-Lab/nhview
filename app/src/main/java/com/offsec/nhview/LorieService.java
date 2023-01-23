@@ -31,6 +31,14 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 @SuppressWarnings({"ConstantConditions", "SameParameterValue"})
 @SuppressLint({"ClickableViewAccessibility", "StaticFieldLeak"})
 public class LorieService extends Service {
@@ -75,7 +83,26 @@ public class LorieService extends Service {
 
 	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String Xdgpath = preferences.getString("CustXDG", "/data/data/com.termux/files/usr/tmp/");
+	String datadir = getApplicationInfo().dataDir;
+        String[] dirs = {
+                datadir + "/files/usr",
+        };
+
+        for (String dir : dirs) {
+            if (!(new File(dir)).exists()) {
+                Log.e("LorieService", dir + " does not exist. Unpacking");
+                try {
+                    InputStream zipStream = getAssets().open("X11.zip");
+                    File targetDirectory = new File(datadir + "/files/");
+                    unzip(zipStream, targetDirectory);
+                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        String Xdgpath = preferences.getString("CustXDG", "/data/data/com.offsec.nhterm/files/usr/tmp/");
         compositor = createLorieThread(Xdgpath);
 
         if (compositor == 0) {
@@ -369,6 +396,31 @@ public class LorieService extends Service {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void unzip(InputStream zipStream, File targetDirectory) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(zipStream)) {
+            ZipEntry ze;
+            int count;
+            byte[] buffer = new byte[8192];
+            while ((ze = zis.getNextEntry()) != null) {
+                File file = new File(targetDirectory, ze.getName());
+                File dir = ze.isDirectory() ? file : file.getParentFile();
+                if (!dir.isDirectory() && !dir.mkdirs())
+                    throw new FileNotFoundException("Failed to ensure directory: " +
+                            dir.getAbsolutePath());
+                if (ze.isDirectory())
+                    continue;
+                try (FileOutputStream fout = new FileOutputStream(file)) {
+                    while ((count = zis.read(buffer)) != -1)
+                        fout.write(buffer, 0, count);
+                }
+                long time = ze.getTime();
+                if (time > 0)
+                    file.setLastModified(time);
+            }
         }
     }
 
